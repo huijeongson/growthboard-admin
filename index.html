@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>성장판 어드민 - APP 버전 관리 (학습 APP)</title>
+<title>성장판 어드민 - 디지털 학습APP 관리</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -160,6 +160,38 @@
     margin-left: 6px;
     vertical-align: middle;
   }
+  .menu-single {
+    padding: 11px 20px;
+    font-size: 13px;
+    color: var(--sb-text);
+    cursor: pointer;
+    user-select: none;
+  }
+  .menu-single:hover { background: var(--sb-bg-2); }
+  .menu-single.active {
+    color: #fff;
+    background: var(--sb-active-bg);
+    font-weight: 500;
+    position: relative;
+  }
+  .menu-single.active::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--sb-active);
+  }
+  .menu-single.new::after {
+    content: "NEW";
+    background: var(--success);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
 
   .content {
     flex: 1;
@@ -243,6 +275,9 @@
   .badge-required { background: var(--danger-soft); color: var(--danger); border: 1px solid #fecaca; }
   .badge-optional { background: var(--primary-soft); color: var(--primary); border: 1px solid #bfdbfe; }
   .badge-empty { background: var(--warning-soft); color: var(--warning); border: 1px solid #fde68a; }
+  .badge-on { background: #ecfdf5; color: var(--success); border: 1px solid #a7f3d0; }
+  .badge-off { background: var(--bg-soft); color: var(--text-mute); border: 1px solid var(--border-strong); }
+  .mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 12px; letter-spacing: 0.3px; }
 
   .pagination {
     display: flex;
@@ -306,6 +341,10 @@
   .form-control.short { max-width: 240px; }
   textarea.form-control { min-height: 100px; max-width: 800px; resize: vertical; }
   .form-hint { font-size: 12px; color: var(--text-mute); }
+  .hint-with-count { display: flex; justify-content: space-between; gap: 12px; max-width: 560px; }
+  .char-count { flex-shrink: 0; font-variant-numeric: tabular-nums; color: var(--text-mute); }
+  .char-count.warn { color: var(--warning); font-weight: 600; }
+  .char-count.max { color: var(--danger); font-weight: 600; }
   .form-error { font-size: 12px; color: var(--danger); display: none; }
   .form-error.show { display: block; }
   .form-control.error { border-color: var(--danger); }
@@ -439,6 +478,18 @@
     line-height: 1.5;
   }
 
+  /* 수정 확인 텍스트 리스트 */
+  .confirm-list { display: flex; flex-direction: column; gap: 14px; }
+  .confirm-item { display: flex; gap: 16px; align-items: baseline; }
+  .confirm-label { width: 80px; flex-shrink: 0; font-size: 12px; color: var(--text-dim); }
+  .confirm-value { font-size: 14px; color: var(--text); font-weight: 500; }
+  .confirm-value.multiline {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
   /* 안전장치 영역 */
   .safety-box {
     margin-top: 20px;
@@ -537,7 +588,6 @@
             <div class="menu-child">슬라이드 메뉴관리</div>
             <div class="menu-child">메세지관리</div>
             <div class="menu-child">App 버전관리 (성장판 APP)</div>
-            <div class="menu-child active new" onclick="goPage('list')">App 버전관리 (학습 APP)</div>
             <div class="menu-child">앱 메뉴 관리</div>
           </div>
         </div>
@@ -557,6 +607,7 @@
           <div class="menu-parent" onclick="toggleMenu(this)">코드관리<span class="arrow">▾</span></div>
           <div class="menu-children"><div class="menu-child">시스템 코드</div></div>
         </div>
+        <div class="menu-single active new" onclick="goPage('list')">디지털 학습APP 관리</div>
       </nav>
     </div>
 
@@ -567,10 +618,10 @@
         <div class="page active" id="page-list">
           <div class="page-header">
             <div>
-              <div class="page-title">APP 버전 관리 (학습 APP)</div>
+              <div class="page-title">디지털 학습APP 관리</div>
               <div class="page-title-underline"></div>
             </div>
-            <div class="breadcrumb"><span>전시관리</span> &gt; <span class="crumb-current">APP 버전 관리 (학습 APP)</span></div>
+            <div class="breadcrumb"><span class="crumb-current">디지털 학습APP 관리</span></div>
           </div>
 
           <div class="toolbar">
@@ -587,7 +638,9 @@
                 <tr>
                   <th onclick="sortBy('systemId')">systemId <span class="sort-icon">⇅</span></th>
                   <th onclick="sortBy('name')">상품명 <span class="sort-icon">⇅</span></th>
-                  <th onclick="sortBy('version')">최신 버전 <span class="sort-icon">⇅</span></th>
+                  <th onclick="sortBy('inUse')">사용여부 <span class="sort-icon">⇅</span></th>
+                  <th onclick="sortBy('version')">버전명 <span class="sort-icon">⇅</span></th>
+                  <th onclick="sortBy('versionCode')">버전코드 <span class="sort-icon">⇅</span></th>
                   <th onclick="sortBy('required')">필수/미필수 <span class="sort-icon">⇅</span></th>
                   <th onclick="sortBy('updatedAt')" class="sorted">최근 수정일 <span class="sort-icon">▼</span></th>
                 </tr>
@@ -611,11 +664,11 @@
         <div class="page" id="page-edit">
           <div class="page-header">
             <div>
-              <div class="page-title">APP 버전 관리 (학습 APP)</div>
+              <div class="page-title">디지털 학습APP 관리</div>
               <div class="page-title-underline"></div>
               <div class="page-subinfo" id="edit-subinfo">써밋 스코어수학 · systemId 001 · 등록일 2026-05-13</div>
             </div>
-            <div class="breadcrumb"><span>전시관리</span> &gt; <span>APP 버전 관리 (학습 APP)</span> &gt; <span class="crumb-current">수정</span></div>
+            <div class="breadcrumb"><span>디지털 학습APP 관리</span> &gt; <span class="crumb-current">수정</span></div>
           </div>
 
           <div class="form-card">
@@ -623,7 +676,6 @@
               <div class="form-label">학습 APP</div>
               <div class="form-input-wrap">
                 <input class="form-control readonly" id="edit-systemName" readonly>
-                <div class="form-hint">systemId 기반 자동 매핑 (변경 불가)</div>
               </div>
             </div>
 
@@ -635,16 +687,18 @@
             </div>
 
             <div class="form-row">
-              <div class="form-label">최신 버전 <span class="req">*</span></div>
+              <div class="form-label">사용여부</div>
               <div class="form-input-wrap">
-                <input class="form-control short" id="edit-version" oninput="onEditChange()">
-                <div class="form-hint">SemVer 형식 (예: 3.2.1)</div>
-                <div class="form-error" id="edit-version-error"></div>
+                <div class="radio-group">
+                  <label class="radio"><input type="radio" name="edit-inuse" value="사용" onchange="onEditChange()"> 사용</label>
+                  <label class="radio"><input type="radio" name="edit-inuse" value="미사용" onchange="onEditChange()"> 미사용</label>
+                </div>
+                <div class="form-hint">미사용 시 학습 APP에 업데이트 정책이 전달되지 않습니다</div>
               </div>
             </div>
 
             <div class="form-row">
-              <div class="form-label">업데이트 분류 <span class="req">*</span></div>
+              <div class="form-label">업데이트 분류</div>
               <div class="form-input-wrap">
                 <div class="radio-group">
                   <label class="radio"><input type="radio" name="edit-required" value="필수" onchange="onEditChange()"> 필수</label>
@@ -654,16 +708,39 @@
             </div>
 
             <div class="form-row">
-              <div class="form-label">배포 내용</div>
+              <div class="form-label">버전명</div>
               <div class="form-input-wrap">
-                <textarea class="form-control" id="edit-notes" oninput="onEditChange()" placeholder="팝업 노출용 배포 내용"></textarea>
+                <input class="form-control short" id="edit-version" oninput="onEditChange()" placeholder="예:2.01.20">
+                <div class="form-hint">앱 버전 기입 (versionname, 예시:2.01.20)</div>
+                <div class="form-error" id="edit-version-error"></div>
               </div>
             </div>
 
-            <div class="notice">
-              <span class="notice-icon">⚠</span>
-              <div class="notice-text">
-                <strong>주의:</strong> 미배포 버전을 '필수'로 등록 시 전체 사용자가 학습 APP 진입 불가합니다. 스토어 배포 완료 후 등록하세요.
+            <div class="form-row">
+              <div class="form-label">버전코드</div>
+              <div class="form-input-wrap">
+                <input class="form-control short" id="edit-versioncode" oninput="onEditChange()" maxlength="9" inputmode="numeric" placeholder="예: 003002001">
+                <div class="form-hint">숫자 9자리 (versionCode)</div>
+                <div class="form-error" id="edit-versioncode-error"></div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-label">팝업 문구 표출</div>
+              <div class="form-input-wrap">
+                <input class="form-control" id="edit-popup" oninput="onEditChange()" maxlength="50" placeholder="업데이트 팝업에 노출될 안내 문구">
+                <div class="form-hint hint-with-count">
+                  <span>공백 포함 최대 50자, 미입력시 기본 문구 노출</span>
+                  <span class="char-count" id="edit-popup-count">0/50</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-label">배포 내용</div>
+              <div class="form-input-wrap">
+                <textarea class="form-control" id="edit-notes" oninput="onEditChange()" placeholder="팝업 노출용 배포 내용"></textarea>
+                <div class="form-hint">* 앱 배포 내용 메모</div>
               </div>
             </div>
           </div>
@@ -687,30 +764,11 @@
       <button class="modal-close" onclick="closeConfirm()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="modal-intro">다음 내용으로 버전 정책을 수정할까요?</div>
-
-      <table class="diff-table">
-        <thead>
-          <tr>
-            <th style="width: 90px;">항목</th>
-            <th>변경 전</th>
-            <th>변경 후</th>
-          </tr>
-        </thead>
-        <tbody id="diff-tbody"></tbody>
-      </table>
-
-      <div class="safety-box" id="safety-box" style="display: none;">
-        <div class="safety-title">⚠ 필수 업데이트 등록 - 사전 확인</div>
-        <label class="safety-check">
-          <input type="checkbox" id="safety-check-1" onchange="updateConfirmBtn()">
-          <span>이 버전이 <strong>Play Store에 실제 배포 완료</strong>되었음을 확인했습니다.</span>
-        </label>
-      </div>
+      <div class="confirm-list" id="diff-list"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeConfirm()">취소</button>
-      <button class="btn btn-primary" id="confirm-submit" onclick="submitConfirm()">확인하고 수정</button>
+      <button class="btn btn-primary" id="confirm-submit" onclick="submitConfirm()">수정완료</button>
     </div>
   </div>
 </div>
@@ -729,13 +787,13 @@
   ];
 
   let versions = [
-    { systemId: '001', version: '3.2.1', required: '필수', notes: '- 신규 학습 모드 추가\n- 일부 학습 오류 수정\n- 성능 개선', createdAt: '2026-05-13', updatedBy: '희정 손', updatedAt: '2026-05-13 14:22' },
-    { systemId: '003', version: '2.5.0', required: '미필수', notes: '- UI 개선', createdAt: '2026-05-10', updatedBy: '희정 손', updatedAt: '2026-05-10 09:15' },
-    { systemId: '005', version: '1.8.3', required: '미필수', notes: '- 버그 수정', createdAt: '2026-05-08', updatedBy: '희정 손', updatedAt: '2026-05-08 17:40' },
-    { systemId: '006', version: '1.4.0', required: '필수', notes: '- 보안 패치', createdAt: '2026-05-12', updatedBy: '희정 손', updatedAt: '2026-05-12 11:05' },
-    { systemId: '009', version: null, required: null, notes: null, createdAt: null, updatedBy: null, updatedAt: null },
-    { systemId: '010', version: '1.2.1', required: '미필수', notes: '- 성능 개선', createdAt: '2026-05-09', updatedBy: '희정 손', updatedAt: '2026-05-09 13:20' },
-    { systemId: '011', version: '2.0.0', required: '필수', notes: '- 메이저 업데이트', createdAt: '2026-05-14', updatedBy: '희정 손', updatedAt: '2026-05-14 07:45' }
+    { systemId: '001', version: null, versionCode: null, required: null, inUse: null, popup: null, notes: null, createdAt: null, updatedBy: null, updatedAt: null },
+    { systemId: '003', version: '2.5.0', versionCode: '002005000', required: '미필수', inUse: '사용', popup: '새로운 버전이 출시되었습니다. 업데이트 후 이용해주세요.', notes: '- UI 개선', createdAt: '2026-05-10', updatedBy: '희정 손', updatedAt: '2026-05-10 09:15' },
+    { systemId: '005', version: '1.8.3', versionCode: '001008003', required: '미필수', inUse: '사용', popup: '더 나은 학습 환경을 위해 업데이트를 권장합니다.', notes: '- 버그 수정', createdAt: '2026-05-08', updatedBy: '희정 손', updatedAt: '2026-05-08 17:40' },
+    { systemId: '006', version: '1.4.0', versionCode: '001004000', required: '필수', inUse: '사용', popup: '보안 강화를 위한 필수 업데이트입니다. 업데이트 후 학습이 가능합니다.', notes: '- 보안 패치', createdAt: '2026-05-12', updatedBy: '희정 손', updatedAt: '2026-05-12 11:05' },
+    { systemId: '009', version: '1.1.2', versionCode: '001001002', required: '미필수', inUse: '사용', popup: '새로운 버전이 출시되었습니다.', notes: '- 학습 진도 동기화 개선', createdAt: '2026-05-11', updatedBy: '희정 손', updatedAt: '2026-05-11 10:30' },
+    { systemId: '010', version: '1.2.1', versionCode: '001002001', required: '미필수', inUse: '미사용', popup: '새로운 버전이 출시되었습니다.', notes: '- 성능 개선', createdAt: '2026-05-09', updatedBy: '희정 손', updatedAt: '2026-05-09 13:20' },
+    { systemId: '011', version: '2.0.0', versionCode: '002000000', required: '필수', inUse: '사용', popup: '메이저 업데이트가 적용되었습니다. 업데이트 후 학습이 가능합니다.', notes: '- 메이저 업데이트', createdAt: '2026-05-14', updatedBy: '희정 손', updatedAt: '2026-05-14 07:45' }
   ];
 
   let editingSystemId = null;
@@ -767,12 +825,16 @@
         <td>${v.systemId}</td>
         <td>${app.name}</td>
         <td>${hasPolicy
+          ? (v.inUse === '사용' ? '<span class="badge badge-on">사용함</span>' : '<span class="badge badge-off">사용안함</span>')
+          : '<span class="badge badge-off">사용안함</span>'}</td>
+        <td>${hasPolicy
           ? `<a class="version-link" onclick="goPage('edit', '${v.systemId}')">${v.version}</a>`
-          : `<a class="version-link" onclick="goPage('edit', '${v.systemId}')" style="color: var(--warning);">미등록</a>`}</td>
+          : `<a class="version-link" onclick="goPage('edit', '${v.systemId}')" style="color: var(--warning);">-</a>`}</td>
+        <td class="${hasPolicy ? '' : 'unset'}">${hasPolicy ? `<span class="mono">${v.versionCode}</span>` : '-'}</td>
         <td>${hasPolicy
           ? (v.required === '필수' ? '<span class="badge badge-required">필수</span>' : '<span class="badge badge-optional">미필수</span>')
-          : '<span class="badge badge-empty">정책 없음</span>'}</td>
-        <td class="${hasPolicy ? '' : 'unset'}">${hasPolicy ? v.updatedAt : '—'}</td>
+          : '-'}</td>
+        <td class="${hasPolicy ? '' : 'unset'}">${hasPolicy ? v.updatedAt : '-'}</td>
       `;
       tbody.appendChild(tr);
     });
@@ -795,22 +857,28 @@
 
     // 정책 미등록인 경우도 수정 폼에서 신규 입력처럼 열어줌
     if (!v.version) {
-      editOriginal = { systemId, version: '', required: '미필수', notes: '', createdAt: null, updatedAt: null };
+      editOriginal = { systemId, version: '', versionCode: '', required: '미필수', inUse: '사용', popup: '', notes: '', createdAt: null, updatedAt: null };
     } else {
       editOriginal = { ...v };
     }
 
     document.getElementById('edit-subinfo').textContent = editOriginal.createdAt
       ? `${app.name} · systemId ${systemId} · 등록일 ${editOriginal.createdAt}`
-      : `${app.name} · systemId ${systemId} · 정책 미등록`;
+      : `${app.name} · systemId ${systemId}`;
     document.getElementById('edit-systemName').value = `${app.name} (systemId: ${systemId})`;
     document.getElementById('edit-package').value = app.package;
     document.getElementById('edit-version').value = editOriginal.version || '';
+    document.getElementById('edit-versioncode').value = editOriginal.versionCode || '';
+    document.getElementById('edit-popup').value = editOriginal.popup || '';
+    updatePopupCount();
     document.querySelector(`input[name="edit-required"][value="${editOriginal.required || '미필수'}"]`).checked = true;
+    document.querySelector(`input[name="edit-inuse"][value="${editOriginal.inUse || '사용'}"]`).checked = true;
     document.getElementById('edit-notes').value = editOriginal.notes || '';
     document.getElementById('edit-submit-btn').disabled = true;
     document.getElementById('edit-version-error').classList.remove('show');
     document.getElementById('edit-version').classList.remove('error');
+    document.getElementById('edit-versioncode-error').classList.remove('show');
+    document.getElementById('edit-versioncode').classList.remove('error');
   }
 
   // ---------- 검증 로직 ----------
@@ -834,7 +902,7 @@
     // 검증 1: 형식
     if (val && !/^\d+\.\d+\.\d+$/.test(val)) {
       input.classList.add('error');
-      err.textContent = '버전 형식이 올바르지 않습니다 (예: 3.2.1)';
+      err.textContent = '버전 형식이 올바르지 않습니다 (예:2.01.20)';
       err.classList.add('show');
       return false;
     }
@@ -849,73 +917,96 @@
 
     input.classList.remove('error');
     err.classList.remove('show');
-    return !!val;
+    return true;
+  }
+
+  function validateVersionCode() {
+    const input = document.getElementById('edit-versioncode');
+    const err = document.getElementById('edit-versioncode-error');
+    const val = input.value.trim();
+
+    // 검증: 숫자 9자리
+    if (val && !/^\d{9}$/.test(val)) {
+      input.classList.add('error');
+      err.textContent = '버전코드는 숫자 9자리로 입력해주세요 (예: 003002001)';
+      err.classList.add('show');
+      return false;
+    }
+
+    input.classList.remove('error');
+    err.classList.remove('show');
+    return true;
+  }
+
+  function updatePopupCount() {
+    const val = document.getElementById('edit-popup').value;
+    const counter = document.getElementById('edit-popup-count');
+    counter.textContent = `${val.length}/50`;
+    counter.classList.remove('warn', 'max');
+    if (val.length >= 50) counter.classList.add('max');
+    else if (val.length > 40) counter.classList.add('warn');
   }
 
   function onEditChange() {
     if (!editOriginal) return;
+    updatePopupCount();
     const version = document.getElementById('edit-version').value.trim();
+    const versionCode = document.getElementById('edit-versioncode').value.trim();
+    const popup = document.getElementById('edit-popup').value;
     const requiredEl = document.querySelector('input[name="edit-required"]:checked');
     const required = requiredEl ? requiredEl.value : null;
+    const inUseEl = document.querySelector('input[name="edit-inuse"]:checked');
+    const inUse = inUseEl ? inUseEl.value : null;
     const notes = document.getElementById('edit-notes').value;
 
     const changed = version !== (editOriginal.version || '')
+                 || versionCode !== (editOriginal.versionCode || '')
+                 || popup !== (editOriginal.popup || '')
                  || required !== (editOriginal.required || '미필수')
+                 || inUse !== (editOriginal.inUse || '사용')
                  || notes !== (editOriginal.notes || '');
-    const valid = validateVersion();
+    const valid = validateVersion() & validateVersionCode();
     document.getElementById('edit-submit-btn').disabled = !(changed && valid);
   }
 
   // ---------- ADMIN 03 ----------
   function openEditConfirm() {
-    if (!validateVersion()) return;
+    const v1 = validateVersion();
+    const v2 = validateVersionCode();
+    if (!v1 || !v2) return;
     const version = document.getElementById('edit-version').value.trim();
+    const versionCode = document.getElementById('edit-versioncode').value.trim();
+    const popup = document.getElementById('edit-popup').value;
     const required = document.querySelector('input[name="edit-required"]:checked').value;
+    const inUse = document.querySelector('input[name="edit-inuse"]:checked').value;
     const notes = document.getElementById('edit-notes').value;
 
-    pendingEdit = { systemId: editingSystemId, version, required, notes };
+    pendingEdit = { systemId: editingSystemId, version, versionCode, popup, required, inUse, notes };
 
-    // 변경 전후 비교 테이블 생성
-    const tbody = document.getElementById('diff-tbody');
-    tbody.innerHTML = '';
+    // 변경된 항목의 변경 후 값만 텍스트 형태로 표시
+    const list = document.getElementById('diff-list');
+    list.innerHTML = '';
 
     const rows = [
-      { label: '버전', before: editOriginal.version || '(미등록)', after: version },
-      { label: '분류', before: editOriginal.required || '(미등록)', after: required === '필수' ? '필수' : '미필수(권장)' },
+      { label: '사용여부', before: editOriginal.inUse || '-', after: inUse },
+      { label: '분류', before: editOriginal.required || '-', after: required },
+      { label: '버전명', before: editOriginal.version || '-', after: version },
+      { label: '버전코드', before: editOriginal.versionCode || '-', after: versionCode },
+      { label: '팝업 문구', before: editOriginal.popup || '(없음)', after: popup || '(없음)', multiline: true },
       { label: '배포 내용', before: editOriginal.notes || '(없음)', after: notes || '(없음)', multiline: true }
     ];
 
-    rows.forEach(r => {
-      const changed = r.before !== r.after;
-      const tr = document.createElement('tr');
-      if (changed) tr.className = 'changed';
-      tr.innerHTML = `
-        <td class="col-label">${r.label}</td>
-        <td><span class="${changed ? 'val-before' : 'val-same'}${r.multiline ? ' multiline' : ''}">${escapeHtml(r.before)}</span></td>
-        <td>${changed
-          ? `<span class="val-after${r.multiline ? ' multiline' : ''}">${escapeHtml(r.after)}</span>`
-          : `<span class="val-same">변경 없음</span>`}</td>
+    rows.filter(r => r.before !== r.after).forEach(r => {
+      const item = document.createElement('div');
+      item.className = 'confirm-item';
+      item.innerHTML = `
+        <div class="confirm-label">${r.label}</div>
+        <div class="confirm-value${r.multiline ? ' multiline' : ''}">${escapeHtml(r.after)}</div>
       `;
-      tbody.appendChild(tr);
+      list.appendChild(item);
     });
 
-    // 분류 = '필수'인 경우 체크박스 안전장치 활성화
-    const isRequired = required === '필수';
-    const safetyBox = document.getElementById('safety-box');
-    const safetyCheck = document.getElementById('safety-check-1');
-    safetyCheck.checked = false;
-    safetyBox.style.display = isRequired ? 'block' : 'none';
-
-    updateConfirmBtn();
     openConfirmModal();
-  }
-
-  function updateConfirmBtn() {
-    if (!pendingEdit) return;
-    const btn = document.getElementById('confirm-submit');
-    const isRequired = pendingEdit.required === '필수';
-    const safetyCheck = document.getElementById('safety-check-1');
-    btn.disabled = isRequired && !safetyCheck.checked;
   }
 
   function openConfirmModal() { document.getElementById('confirm-modal').classList.add('show'); }
@@ -928,13 +1019,16 @@
     const t = getVersion(p.systemId);
     const wasUnset = !t.version;
     t.version = p.version;
+    t.versionCode = p.versionCode;
+    t.popup = p.popup;
     t.required = p.required;
+    t.inUse = p.inUse;
     t.notes = p.notes;
     if (wasUnset) t.createdAt = today;
     t.updatedBy = '희정 손';
     t.updatedAt = now;
     closeConfirm();
-    showToast('정책이 수정되었습니다');
+    showToast(wasUnset ? '정책이 등록되었습니다' : '정책이 수정되었습니다');
     goPage('list');
   }
 
