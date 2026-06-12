@@ -627,8 +627,6 @@
           <div class="toolbar">
             <div class="toolbar-left">
               <span id="row-count">총 7건</span>
-              <span style="color: var(--text-mute);">|</span>
-              <span style="color: var(--text-mute);">관리 대상 학습 APP 7종 · 버전명 클릭 시 수정 화면 진입</span>
             </div>
           </div>
 
@@ -666,7 +664,7 @@
             <div>
               <div class="page-title">디지털 학습APP 관리</div>
               <div class="page-title-underline"></div>
-              <div class="page-subinfo" id="edit-subinfo">써밋 스코어수학 · systemId 001 · 등록일 2026-05-13</div>
+              <div class="page-subinfo" id="edit-subinfo">써밋 스코어수학 · systemId 001 · 최신 수정일 2026-05-13 14:22</div>
             </div>
             <div class="breadcrumb"><span>디지털 학습APP 관리</span> &gt; <span class="crumb-current">수정</span></div>
           </div>
@@ -747,7 +745,7 @@
 
           <div class="form-actions">
             <button class="btn btn-secondary" onclick="goPage('list')">취소</button>
-            <button class="btn btn-primary" id="edit-submit-btn" onclick="openEditConfirm()" disabled>수정 완료</button>
+            <button class="btn btn-primary" id="edit-submit-btn" onclick="openEditConfirm()" disabled>수정</button>
           </div>
         </div>
 
@@ -824,9 +822,9 @@
       tr.innerHTML = `
         <td>${v.systemId}</td>
         <td>${app.name}</td>
-        <td>${hasPolicy
+        <td class="${hasPolicy ? '' : 'unset'}">${hasPolicy
           ? (v.inUse === '사용' ? '<span class="badge badge-on">사용함</span>' : '<span class="badge badge-off">사용안함</span>')
-          : '<span class="badge badge-off">사용안함</span>'}</td>
+          : '-'}</td>
         <td>${hasPolicy
           ? `<a class="version-link" onclick="goPage('edit', '${v.systemId}')">${v.version}</a>`
           : `<a class="version-link" onclick="goPage('edit', '${v.systemId}')" style="color: var(--warning);">-</a>`}</td>
@@ -862,8 +860,8 @@
       editOriginal = { ...v };
     }
 
-    document.getElementById('edit-subinfo').textContent = editOriginal.createdAt
-      ? `${app.name} · systemId ${systemId} · 등록일 ${editOriginal.createdAt}`
+    document.getElementById('edit-subinfo').textContent = editOriginal.updatedAt
+      ? `${app.name} · systemId ${systemId} · 최신 수정일 ${editOriginal.updatedAt}`
       : `${app.name} · systemId ${systemId}`;
     document.getElementById('edit-systemName').value = `${app.name} (systemId: ${systemId})`;
     document.getElementById('edit-package').value = app.package;
