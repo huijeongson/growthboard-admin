@@ -132,6 +132,13 @@ tbody tr:hover{background:#f8f9fc;cursor:pointer;}
 /* ── 토스트 ── */
 .toast{position:absolute;bottom:24px;left:50%;transform:translateX(-50%) translateY(16px);background:#1d4ed8;color:#fff;font-size:13px;font-weight:600;padding:10px 22px;border-radius:6px;opacity:0;pointer-events:none;transition:all .3s;z-index:200;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+.card-disabled {
+  opacity:.4; pointer-events:none; user-select:none;
+}
+.card-disabled .card-head {
+  color:var(--mute);
+}
 </style>
 </head>
 <body>
@@ -200,8 +207,8 @@ tbody tr:hover{background:#f8f9fc;cursor:pointer;}
               <div class="form-label">사용여부</div>
               <div class="form-ctrl">
                 <div class="radio-group">
-                  <label><input type="radio" name="f-use" value="on"> 사용</label>
-                  <label><input type="radio" name="f-use" value="off"> 미사용</label>
+                  <label><input type="radio" name="f-use" value="on" onchange="onUseChange('f-use')"> 사용</label>
+                  <label><input type="radio" name="f-use" value="off" onchange="onUseChange('f-use')"> 미사용</label>
                 </div>
                 <div class="use-hint">미사용 시 학습 APP에 업데이트 정책이 전달되지 않습니다</div>
               </div>
@@ -489,6 +496,7 @@ function openNormalForm(appId) {
   clearErr('f-vname-err'); clearErr('f-vcode-err');
   document.getElementById('f-vname').classList.remove('err');
   document.getElementById('f-vcode').classList.remove('err');
+  applyUseState('f-use', app.use);
 }
 
 // ── 스텝형 수정 폼 ──────────────────────────────────────
@@ -508,8 +516,8 @@ function openStepForm(appId) {
       <div class="form-label">사용여부</div>
       <div class="form-ctrl">
         <div class="radio-group">
-          <label><input type="radio" name="s-use" value="on" ${app.app1.use?'checked':''}> 사용</label>
-          <label><input type="radio" name="s-use" value="off" ${!app.app1.use?'checked':''}> 미사용</label>
+          <label><input type="radio" name="s-use" value="on" onchange="onUseChange('s-use')" ${app.app1.use?'checked':''}> 사용</label>
+          <label><input type="radio" name="s-use" value="off" onchange="onUseChange('s-use')" ${!app.app1.use?'checked':''}> 미사용</label>
         </div>
         <div class="use-hint">미사용 시 학습 APP에 업데이트 정책이 전달되지 않습니다</div>
       </div>
@@ -548,6 +556,8 @@ function openStepForm(appId) {
   clearErr('s2-vname-err'); clearErr('s2-vcode-err');
   document.getElementById('s2-vname').classList.remove('err');
   document.getElementById('s2-vcode').classList.remove('err');
+  // 사용여부 초기 상태 적용 (innerHTML 렌더 후)
+  setTimeout(() => applyUseState('s-use', app.app1.use), 0);
 }
 
 // ── 스텝 탭 전환 ──────────────────────────────────────
@@ -591,6 +601,10 @@ function validate(pfx, app) {
   if (vc && /^\d{9}$/.test(vc) && app.vcode!=='-' && !codeGT(vc, app.vcode)) {
     setErr(`${pfx}-vcode-err`, `이전값(${app.vcode})보다 큰 값을 입력해 주세요.`);
     document.getElementById(`${pfx}-vcode`).classList.add('err'); ok = false;
+  }
+  if (vn && app.vname!=='-' && !verGT(vn, app.vname)) {
+    setErr(`${pfx}-vname-err`, `이전값(${app.vname})보다 높은 버전을 입력해 주세요.`);
+    document.getElementById(`${pfx}-vname`).classList.add('err'); ok = false;
   }
   return ok;
 }
@@ -670,6 +684,29 @@ function doSaveStep() {
   save('s2', currentApp.app2);
   closeModal('modal-confirm-step'); renderList(); goList();
   showToast('두 앱 모두 저장되었습니다.');
+}
+
+
+// ── 사용여부 변경 시 버전정보 카드 비활성화 ──────────────
+function onUseChange(useName) {
+  const checked = document.querySelector(`input[name="${useName}"]:checked`)?.value;
+  applyUseState(useName, checked === 'on');
+}
+function applyUseState(useName, isOn) {
+  // useName 기준으로 해당 폼의 버전정보 카드 찾기
+  const radio = document.querySelector(`input[name="${useName}"]`);
+  if (!radio) return;
+  // 가장 가까운 panel 내에서 두 번째 card (버전정보)
+  const panel = radio.closest('.panel');
+  if (!panel) return;
+  const cards = panel.querySelectorAll('.card');
+  // 버전정보 카드: card-head 텍스트에 '버전' 포함
+  cards.forEach(card => {
+    const head = card.querySelector('.card-head');
+    if (head && head.textContent.includes('버전')) {
+      card.classList.toggle('card-disabled', !isOn);
+    }
+  });
 }
 
 // ── 유틸 ──────────────────────────────────────────────
