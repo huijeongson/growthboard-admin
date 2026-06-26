@@ -108,10 +108,15 @@ tbody tr:hover{background:#f8f9fc;cursor:pointer;}
 .modal-body{padding:20px;}
 .modal-section-title{font-size:11px;color:var(--mute);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px;}
 .modal-section-title:first-child{margin-top:0;}
-.confirm-row{display:flex;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.confirm-row{display:flex;padding:12px 0;border-bottom:1px solid var(--border);font-size:13px;align-items:flex-start;}
 .confirm-row:last-child{border-bottom:none;}
-.confirm-key{width:100px;color:var(--mute);flex-shrink:0;}
-.confirm-val{color:var(--text);font-weight:500;}
+.confirm-key{width:110px;color:var(--mute);flex-shrink:0;padding-top:4px;font-size:12px;font-weight:500;}
+.confirm-val{flex:1;}
+.confirm-change{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.confirm-prev{color:var(--mute);background:#f3f4f6;padding:3px 9px;border-radius:4px;font-size:12.5px;text-decoration:line-through;}
+.confirm-arrow{color:var(--mute2);font-size:14px;flex-shrink:0;}
+.confirm-next{color:var(--blue);font-weight:700;font-size:13px;background:var(--blue-bg);padding:3px 9px;border-radius:4px;}
+.confirm-single{color:var(--text);font-weight:500;font-size:13px;}
 .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;}
 
 /* ── 토스트 ── */
@@ -187,8 +192,8 @@ tbody tr:hover{background:#f8f9fc;cursor:pointer;}
               <div class="form-label">사용여부</div>
               <div class="form-ctrl">
                 <div class="radio-group">
-                  <label><input type="radio" name="f-use" value="on"> 사용</label>
-                  <label><input type="radio" name="f-use" value="off"> 미사용</label>
+                  <label><input type="radio" name="f-use" value="on" onchange="toggleVerCard()"> 사용</label>
+                  <label><input type="radio" name="f-use" value="off" onchange="toggleVerCard()"> 미사용</label>
                 </div>
                 <div class="use-hint">미사용 시 학습 APP에 업데이트 정책이 전달되지 않습니다</div>
               </div>
@@ -197,7 +202,7 @@ tbody tr:hover{background:#f8f9fc;cursor:pointer;}
         </div>
 
         <!-- 최신 버전정보 -->
-        <div class="card">
+        <div class="card" id="ver-card">
           <div class="card-head">최신 버전정보</div>
           <div class="card-body">
             <div class="form-row">
@@ -328,6 +333,7 @@ function openNormalForm(appId) {
   document.getElementById('f-app').value = `${app.name} (systemId: ${app.id})`;
   const useEl = document.querySelector(`input[name="f-use"][value="${app.use?'on':'off'}"]`);
   if (useEl) useEl.checked = true;
+  toggleVerCard();
 
   document.getElementById('f-vname').value = '';
   document.getElementById('f-vcode').value = '';
@@ -421,10 +427,31 @@ function filterVersionCode(el) {
   el.value = el.value.replace(/[^0-9]/g, '');
 }
 
+// ── 사용여부에 따라 버전정보 카드 노출/미노출 ──────────────
+function toggleVerCard() {
+  const isOn = document.querySelector('input[name="f-use"]:checked')?.value === 'on';
+  const card = document.getElementById('ver-card');
+  if (card) card.style.display = isOn ? '' : 'none';
+}
+
 // ── 유틸 ──────────────────────────────────────────────
-function cr(k,v,prev){
-  const prevHtml = prev && prev !== '-' ? `<span style="color:var(--mute);font-size:11px;text-decoration:line-through;margin-right:6px;">${prev}</span><span style="color:var(--mute);font-size:11px;margin-right:6px;">→</span>` : '';
-  return `<div class="confirm-row"><span class="confirm-key">${k}</span><span class="confirm-val">${prevHtml}${v}</span></div>`;
+function cr(k, v, prev) {
+  if (prev && prev !== '-' && prev !== v) {
+    return `<div class="confirm-row">
+      <span class="confirm-key">${k}</span>
+      <span class="confirm-val">
+        <div class="confirm-change">
+          <span class="confirm-prev">${prev}</span>
+          <span class="confirm-arrow">→</span>
+          <span class="confirm-next">${v}</span>
+        </div>
+      </span>
+    </div>`;
+  }
+  return `<div class="confirm-row">
+    <span class="confirm-key">${k}</span>
+    <span class="confirm-val"><span class="confirm-single">${v}</span></span>
+  </div>`;
 }
 function setHint(id,t){ document.getElementById(id).textContent=t; }
 function setErr(id,t)  { document.getElementById(id).textContent=t; }
